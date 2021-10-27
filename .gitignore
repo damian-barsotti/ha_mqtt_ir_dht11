@@ -1,0 +1,2 @@
+# local config outside of git
+/config_local.h
