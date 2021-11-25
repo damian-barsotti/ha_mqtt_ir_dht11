@@ -200,6 +200,11 @@ void publish_ac_state() {
             break;
         }
 
+    if (ac.getSwing())
+        root["swing"] = String("on");
+    else
+        root["swing"] = String("off");
+
     publish(root, MQTT_AC_GET_TOPIC);
 }
 
@@ -209,17 +214,22 @@ void print_ac_state() {
 
 void ac_turn_on() {
     ac.on();
-    ac.sendExtended();
-    ac.send();
-    print_ac_state();
+    // ac.sendExtended();
+    // ac.send();
+    ac.sendOn();
+    //print_ac_state();
 }
 
 void ac_turn_off() {
     ac.off();
-    ac.sendExtended();
-    ac.send();
-    print_ac_state();
+    //ac.sendExtended();
+    //ac.send();
+    ac.sendOff();
+    //print_ac_state();
 }
+
+void ac_swing_off() { ac.setSwing(false); }
+void ac_swing_on()  { ac.setSwing(true); }
 
 // function called when a MQTT message arrived
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -260,6 +270,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
         if (strcmp(COMM_AUTO, command) == 0) {
             Serial.println("Set the A/C mode to auto ...");
             ac.setMode(kSamsungAcAuto);
+        } else 
+        if (strcmp(COMM_OFF, command) == 0) {
+            Serial.println("Set the A/C mode to off ...");
+            ac_turn_off();
         } else 
         if (strcmp(COMM_HEAT, command) == 0) {
             Serial.println("Set the A/C mode to heat ...");
@@ -310,6 +324,17 @@ void callback(char* topic, byte* payload, unsigned int length) {
             ac.setFan(kSamsungAcFanTurbo);
         } else 
           return;
+
+    } else
+    if (strcmp(MQTT_AC_SWING_SET_TOPIC, topic) == 0) {
+
+        if (strcmp(COMM_OFF, command) == 0) {
+            Serial.println("Turn off swing A/C ...");
+            ac_swing_off();
+        } else {
+            Serial.println("Turn on swing A/C ...");
+            ac_swing_on();
+        }
 
     } else
         return;
@@ -422,10 +447,11 @@ bool setup_wifi() {
 void setup_ac() {
     ac.begin();
     logger_info("Setting initial state for A/C.");
-    ac.setFan(kSamsungAcFanLow);
+    ac.setFan(kSamsungAcFanAuto);
     ac.setMode(kSamsungAcFan);
     ac.setTemp(25);
-    ac.setSwing(false);
+    ac_swing_off();
+    //ac.setBeep(true);
     ac_turn_off();
 }
 
