@@ -145,23 +145,23 @@ void publish_ac_state() {
     switch (ac.getFan())
     {
     case kSamsungAcFanAuto:
-        root["fan"] = String("auto");
+        root["fan"] = String(COMM_FAN_AUTO);
         break;
     
     case kSamsungAcFanLow:
-        root["fan"] = String("low");
+        root["fan"] = String(COMM_FAN_LOW);
         break;
     
     case kSamsungAcFanMed:
-        root["fan"] = String("medium");
+        root["fan"] = String(COMM_FAN_MED);
         break;
     
     case kSamsungAcFanHigh:
-        root["fan"] = String("high");
+        root["fan"] = String(COMM_FAN_HIGH);
         break;
     
     case kSamsungAcFanTurbo:
-        root["fan"] = String("turbo");
+        root["fan"] = String(COMM_FAN_TURBO);
         break;
     
     default:
@@ -169,28 +169,28 @@ void publish_ac_state() {
     }
     
     if (!ac.getPower())
-        root["mode"] = String("off");
+        root["mode"] = String(COMM_OFF);
     else
         switch (ac.getMode())
         {
         case kSamsungAcAuto:
-            root["mode"] = String("auto");
+            root["mode"] = String(COMM_AUTO);
             break;
 
         case kSamsungAcCool:
-            root["mode"] = String("cool");
+            root["mode"] = String(COMM_COOL);
             break;
 
         case kSamsungAcDry:
-            root["mode"] = String("dry");
+            root["mode"] = String(COMM_DRY);
             break;
 
         case kSamsungAcFan:
-            root["mode"] = String("fan");
+            root["mode"] = String(COMM_FAN_ONLY);
             break;
 
         case kSamsungAcHeat:
-            root["mode"] = String("heat");
+            root["mode"] = String(COMM_HEAT);
             break;
 
         default:
