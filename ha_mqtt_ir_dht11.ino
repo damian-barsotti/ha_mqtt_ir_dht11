@@ -83,11 +83,8 @@ void publish(DynamicJsonDocument root, const char* topic){
     
     int res = client.publish(topic, data.c_str(), true);
     
-    serializeJson(root, Serial);
-    Serial.println();
-
-    // if (res != 1)
-    //     Serial.println(String("Publish result: ") + String(res));  
+    // serializeJson(root, Serial);
+    // Serial.println();
 }
 
 String header_log(char* level, int n_log){
