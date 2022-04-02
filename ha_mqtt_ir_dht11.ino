@@ -493,9 +493,9 @@ void loop() {
         
         // Average reads
         if (read_sensors(t, h)){
-            n_sensor_reads++;
             ac_t += t;
             ac_h += h;
+            n_sensor_reads++;
         }
 
         if (last_read_time >= READ_SENSOR_TIME_IN_SECONDS*1000){
