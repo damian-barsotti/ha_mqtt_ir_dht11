@@ -493,8 +493,6 @@ void loop() {
         
         // Average reads
         if (read_sensors(t, h)){
-            //Serial.print("read temp: "); Serial.print(t);
-            //Serial.print("read humid: "); Serial.println(h);            
             n_sensor_reads++;
             ac_t += t;
             ac_h += h;
