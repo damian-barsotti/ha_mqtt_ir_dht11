@@ -1,0 +1,4 @@
+[submodule "src/classes/HTReader"]
+	path = src/classes/HTReader
+	url = https://github.com/damian-barsotti/HTReader.git
+	branch = main
