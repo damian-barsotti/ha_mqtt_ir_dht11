@@ -53,8 +53,8 @@ const PROGMEM char* COMM_FAN_TURBO = "turbo";
 // sleeping time
 const uint16_t SLEEPING_TIME_IN_MSECONDS = 500; 
 
-// read sensor interval time
-const uint16_t READ_SENSOR_TIME_IN_SECONDS = 20; 
+// number of readings to take average
+const uint16_t N_AVG_SENSOR = 12;
 
 // send data configuratio connection to mqtt
 const bool LOG_MQTT_CONNECT = false;

@@ -62,16 +62,18 @@ Based on:
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
 #include <ir_Samsung.h>
-#include <DHT.h>
+
+#include "src/classes/HTReader/HTReader.h"
 
 #include "config_local.h" // File for testing outside git
 #include "config.h"
 
 
-DHT dht(DHTPIN, DHTTYPE);
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 IRSamsungAc ac(kIrLed);     // Set the GPIO used for sending messages.
+
+HTReader *sensor;
 
 void publish(DynamicJsonDocument root, const char* topic){
     
@@ -392,25 +394,6 @@ bool mqtt_connect() {
     return attempt < max_attempt;
 }
 
-bool read_sensors(float &t, float &h){
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  // Read temperature as Celsius (the default)
-  t = dht.readTemperature();
-  h = dht.readHumidity();
-
-  if (isnan(h) || isnan(t)) {
-      delay(2000);
-      h = 0.0; t = 0.0; 
-      return false;
-  } else {
-      // adjust DHT11
-      h = humid_slope * h + humid_shift;
-      t = temp_slope * t + temp_shift; // Read temperature as C
-      return true;
-  }
-}
-
 bool setup_wifi() {
 
     // init the WiFi connection
@@ -452,15 +435,11 @@ void setup_ac() {
     ac_turn_off();
 }
 
-int last_read_time;
-
 void setup() {
     // init the serial
     Serial.begin(115200);
     //Take some time to open up the Serial Monitor
     delay(1000);
-    
-    dht.begin();
     
     // Restart ESP if max attempt reached
     if (!setup_wifi()){
@@ -478,42 +457,36 @@ void setup() {
 
     setup_ac();
 
-    last_read_time = 0;
-}
+    sensor = new HTReader(
+        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, N_AVG_SENSOR,
+        temp_slope, temp_shift, humid_slope, humid_shift);
 
-int n_sensor_reads = 0;
-float ac_t = 0.0, ac_h = 0.0;
+    while (sensor->error()){
+        logger_warn("Failed to read from DHT sensor!");
+        delay(sensor->delay_ms());
+        sensor->reset();
+    }
+
+}
 
 void loop() {
     float t, h;
 
     // Serial.println("Inside loop");
     if (client.connected() || mqtt_connect()) {
+
         client.loop();
         
-        // Average reads
-        if (read_sensors(t, h)){
-            ac_t += t;
-            ac_h += h;
-            n_sensor_reads++;
-        }
-
-        if (last_read_time >= READ_SENSOR_TIME_IN_SECONDS*1000){
-            if (n_sensor_reads != 0)
-                // Average reads
-                publish_data_sensor(ac_t/n_sensor_reads, ac_h/n_sensor_reads);
-            else
-                logger_warn("Failed to read from DHT sensor!");
-
-            ac_t=0.0; ac_h=0.0;
-            n_sensor_reads = 0;
-
+        if (sensor->beginLoop()){
+            publish_data_sensor(sensor->getTemp(), sensor->getHumid());
             print_ac_state();
             publish_ac_state();
-            last_read_time = 0;
-        } 
+        }
+
+        if (sensor->error())
+            logger_warn("Failed to read from DHT sensor!");
+
     }
 
-    last_read_time += SLEEPING_TIME_IN_MSECONDS;
     delay(SLEEPING_TIME_IN_MSECONDS);
 }
