@@ -5,3 +5,4 @@
 [submodule "src/classes/WiFiSetup"]
 	path = src/classes/WiFiSetup
 	url = https://github.com/damian-barsotti/WiFiSetup.git
+	branch = main
