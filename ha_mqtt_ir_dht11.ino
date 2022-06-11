@@ -390,7 +390,6 @@ bool mqtt_connect() {
         client.subscribe(MQTT_AC_FAN_SET_TOPIC);
         client.subscribe(MQTT_AC_SWING_SET_TOPIC);
         client.subscribe(MQTT_AC_GET_TOPIC);
-        logger_info(String("MQTT connect in ") + attempt + " attempts");
     } else
         Serial.println("ERROR: max_attempt reached to MQTT connect");
     
