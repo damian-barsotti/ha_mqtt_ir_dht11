@@ -53,9 +53,10 @@ Based on:
  * 
  */
 
-#include <ESP8266WiFi.h>
-
 #define MQTT_VERSION MQTT_VERSION_3_1_1
+
+#include <WiFiClient.h>
+
 #include <PubSubClient.h>
 
 #include <ArduinoJson.h>
@@ -63,6 +64,7 @@ Based on:
 #include <IRsend.h>
 #include <ir_Samsung.h>
 
+#include "src/classes/WiFiSetup/WiFiSetup.h"
 #include "src/classes/HTReader/HTReader.h"
 
 #include "config_local.h" // File for testing outside git
@@ -73,6 +75,7 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 IRSamsungAc ac(kIrLed);     // Set the GPIO used for sending messages.
 
+WiFiSetup *WiFi;
 HTReader *sensor;
 
 void publish(DynamicJsonDocument root, const char* topic){
@@ -353,7 +356,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void send_mqtt_connect_info(int attempt){
 
     if (LOG_MQTT_CONNECT){
-      logger_info(String("IP address: ") + WiFi.localIP().toString());
+      logger_info(String("IP address: ") + WiFi->localIP().toString());
       logger_info(String("MQTT SERVER IP: ") + MQTT_SERVER_IP + ":" + MQTT_SERVER_PORT);
       logger_info(String("MQTT CLIENT ID: ") + MQTT_CLIENT_ID);
       logger_info(String("temp slope: ") + temp_slope + String(", temp shift: ") + temp_shift
@@ -394,36 +397,6 @@ bool mqtt_connect() {
     return attempt < max_attempt;
 }
 
-bool setup_wifi() {
-
-    // init the WiFi connection
-    Serial.println();
-    Serial.print("INFO: Connecting to ");
-    Serial.println(WIFI_SSID);
-    WiFi.mode(WIFI_STA);
-    
-    //  Enable light sleep
-    wifi_set_sleep_type(LIGHT_SLEEP_T);
-    
-    if (local_IP != IPAddress(0,0,0,0) && !WiFi.config(local_IP, gateway, subnet)){
-        Serial.println("STA Failed to configure fixed IP");
-        return false;    
-    }
-
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    
-    static const int max_attempt = 100;
-    int attempt = 0;
-    while (attempt < max_attempt && WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-        attempt++;
-    }
-    Serial.println("");
-
-    return (attempt < max_attempt);
-}
-
 void setup_ac() {
     ac.begin();
     logger_info("Setting initial state for A/C.");
@@ -440,12 +413,25 @@ void setup() {
     Serial.begin(115200);
     //Take some time to open up the Serial Monitor
     delay(1000);
-    
-    // Restart ESP if max attempt reached
-    if (!setup_wifi()){
+
+    WiFi = new WiFiSetup(Serial);
+
+    // init the WiFi connection
+    Serial.println();
+    Serial.print("INFO: Connecting to ");
+    Serial.println(WIFI_SSID);
+
+#ifdef FIXED_IP
+    bool wifi_error = !WiFi->begin(WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet); 
+#else
+    bool wifi_error = !WiFi->begin(WIFI_SSID, WIFI_PASSWORD); 
+#endif
+
+    if (wifi_error){
         Serial.println("ERROR: max_attempt reached to WiFi connect");
+        // Restart ESP if max attempt reached
         Serial.print("Waiting and Restaring");
-        WiFi.disconnect();
+        WiFi->disconnect();
         delay(1000);
         ESP.restart();
     }

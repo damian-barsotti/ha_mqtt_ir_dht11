@@ -5,17 +5,18 @@
 const PROGMEM char* WIFI_SSID = "[Redacted]";
 const PROGMEM char* WIFI_PASSWORD = "[Redacted]";
 
-// If 0.0.0.0 use dhcp
+// If defined use dhcp
+// #ifdef FIXED_IP
 //const IPAddress local_IP(0,0,0,0);
+// const IPAddress local_IP(192, 168, 0, 53);
 
 // If neded set your Static IP address
-const IPAddress local_IP(192, 168, 0, 53);
 // Set your Gateway IP address
-const IPAddress gateway(192, 168, 0, 1);
-const IPAddress subnet(255, 255, 255, 0);
+// const IPAddress gateway(192, 168, 0, 1);
+// const IPAddress subnet(255, 255, 255, 0);
 // Optional DNS
-//IPAddress primaryDNS(8, 8, 8, 8);   //optional
-//IPAddress secondaryDNS(8, 8, 4, 4); //optional
+// IPAddress primaryDNS(8, 8, 8, 8);   //optional
+// IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
 // MQTT: ID, server IP, port, username and password
 const PROGMEM char* MQTT_CLIENT_ID = "home_sensor1_dht11";
