@@ -86,6 +86,8 @@ void publish(DynamicJsonDocument root, const char* topic){
     
     Serial.print("Publish in topic "); Serial.println(topic);
     
+    Serial.println(data);
+
     int res = client.publish(topic, data.c_str(), true);
     
     // serializeJson(root, Serial);
@@ -107,7 +109,6 @@ String header_log_warn(int n_log){
 // function to log throught Serial and mqtt topic
 bool logger(String msg){
 
-    Serial.println(msg);
     if (client.connected()) {
         DynamicJsonDocument root(msg.length()+17);
         root["log"] = msg;
@@ -369,7 +370,7 @@ bool mqtt_connect() {
     // Loop until we're reconnected
     static const int max_attempt = 10;
     int attempt = 0;
-    
+    Serial.println("");
     while (attempt < max_attempt && !client.connected()) {
         Serial.println("INFO: Attempting MQTT connection...");
         // Attempt to connect
@@ -457,12 +458,13 @@ void setup() {
 void loop() {
     float t, h;
 
-    // Serial.println("Inside loop");
+    Serial.print("-");
     if (client.connected() || mqtt_connect()) {
 
         client.loop();
         
         if (sensor->beginLoop()){
+            Serial.println();
             publish_data_sensor(sensor->getTemp(), sensor->getHumid());
             print_ac_state();
             publish_ac_state();
