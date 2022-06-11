@@ -2,3 +2,6 @@
 	path = src/classes/HTReader
 	url = https://github.com/damian-barsotti/HTReader.git
 	branch = main
+[submodule "src/classes/WiFiSetup"]
+	path = src/classes/WiFiSetup
+	url = https://github.com/damian-barsotti/WiFiSetup.git
