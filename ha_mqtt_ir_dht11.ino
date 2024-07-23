@@ -64,8 +64,8 @@ Based on:
 #include <IRsend.h>
 #include <ir_Samsung.h>
 
-#include "src/classes/WiFiSetup/WiFiSetup.h"
-#include "src/classes/HTReader/HTReader.h"
+#include "src/esp8266_controllers/Wifi/Wifi.h"
+#include "src/esp8266_controllers/HTReader/HTReader.h"
 
 #include "config_local.h" // File for testing outside git
 #include "config.h"
@@ -75,8 +75,14 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 IRSamsungAc ac(kIrLed);     // Set the GPIO used for sending messages.
 
-WiFiSetup *WiFi;
-HTReader *sensor;
+Wifi wifi(Serial, WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet);
+
+HTReader ht_sensor(
+    DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS,
+    temp_slope, temp_shift,
+    humid_slope, humid_shift,
+    n_reads);
+
 
 void publish(DynamicJsonDocument root, const char* topic){
     
@@ -94,7 +100,7 @@ void publish(DynamicJsonDocument root, const char* topic){
     // Serial.println();
 }
 
-String header_log(char* level, int n_log){
+String header_log(char const* level, int n_log){
     return String(level) + " " + String(n_log) + ": ";
 }
 
@@ -357,7 +363,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void send_mqtt_connect_info(int attempt){
 
     if (LOG_MQTT_CONNECT){
-      logger_info(String("IP address: ") + WiFi->localIP().toString());
+      logger_info(String("IP address: ") + wifi.localIP().toString());
       logger_info(String("MQTT SERVER IP: ") + MQTT_SERVER_IP + ":" + MQTT_SERVER_PORT);
       logger_info(String("MQTT CLIENT ID: ") + MQTT_CLIENT_ID);
       logger_info(String("temp slope: ") + temp_slope + String(", temp shift: ") + temp_shift
@@ -414,27 +420,17 @@ void setup() {
     //Take some time to open up the Serial Monitor
     delay(1000);
 
-    WiFi = new WiFiSetup(Serial);
-
-    // init the WiFi connection
-    Serial.println();
-    Serial.print("INFO: Connecting to ");
-    Serial.println(WIFI_SSID);
-
-#ifdef FIXED_IP
-    bool wifi_error = !WiFi->begin(WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet); 
-#else
-    bool wifi_error = !WiFi->begin(WIFI_SSID, WIFI_PASSWORD); 
-#endif
-
-    if (wifi_error){
+    // Restart ESP if max attempt reached
+    if (!wifi.begin())
+    {
         Serial.println("ERROR: max_attempt reached to WiFi connect");
-        // Restart ESP if max attempt reached
         Serial.print("Waiting and Restaring");
-        WiFi->disconnect();
+        wifi.disconnect();
         delay(1000);
         ESP.restart();
     }
+
+    Serial.println(String("IP: ") + wifi.localIP().toString());
 
     // init the MQTT connection
     client.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
@@ -443,14 +439,12 @@ void setup() {
 
     setup_ac();
 
-    sensor = new HTReader(
-        DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS, N_AVG_SENSOR,
-        temp_slope, temp_shift, humid_slope, humid_shift);
-
-    while (sensor->error()){
-        logger_warn("Failed to read from DHT sensor!");
-        delay(sensor->delay_ms());
-        sensor->reset();
+    ht_sensor.begin();
+    while (ht_sensor.error())
+    {
+        Serial.println("ERROR: sensor read. Retrying ...");
+        delay(ht_sensor.delay_ms());
+        ht_sensor.reset();
     }
 
 }
@@ -463,14 +457,17 @@ void loop() {
 
         client.loop();
         
-        if (sensor->beginLoop()){
+    if (ht_sensor.error())
+        Serial.println("Failed to read from sensor!");
+
+        if (ht_sensor.beginLoop()){
             Serial.println();
-            publish_data_sensor(sensor->getTemp(), sensor->getHumid());
+            publish_data_sensor(ht_sensor.getTemp(), ht_sensor.getHumid());
             print_ac_state();
             publish_ac_state();
         }
 
-        if (sensor->error())
+        if (ht_sensor.error())
             logger_warn("Failed to read from DHT sensor!");
 
     }

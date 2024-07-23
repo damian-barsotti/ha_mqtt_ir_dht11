@@ -1,8 +1,3 @@
-[submodule "src/classes/HTReader"]
-	path = src/classes/HTReader
-	url = https://github.com/damian-barsotti/HTReader.git
-	branch = main
-[submodule "src/classes/WiFiSetup"]
-	path = src/classes/WiFiSetup
-	url = https://github.com/damian-barsotti/WiFiSetup.git
-	branch = main
+[submodule "src/esp8266_controllers"]
+	path = src/esp8266_controllers
+	url = https://github.com/damian-barsotti/esp8266_controllers.git
