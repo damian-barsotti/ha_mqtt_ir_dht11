@@ -230,7 +230,9 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
     char command[length + 1];
 
-    if (strcmp(topic, MQTT_AC_GET_TOPIC) == 0)
+    if (strcmp(topic, MQTT_AC_GET_TOPIC) == 0 ||
+        strcmp(topic, MQTT_LOG_TOPIC) == 0 ||
+        strcmp(topic, MQTT_SENSOR_TOPIC) == 0)
         return;
 
     Serial.print("CB: Message arrived [");
