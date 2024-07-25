@@ -74,11 +74,21 @@ HTReader ht_sensor(
     humid_slope, humid_shift,
     n_reads);
 
+std::array topics{MQTT_SENSOR_TOPIC,
+                  MQTT_AC_POWER_SET_TOPIC,
+                  MQTT_AC_MODE_SET_TOPIC,
+                  MQTT_AC_TEMP_SET_TOPIC,
+                  MQTT_AC_FAN_SET_TOPIC,
+                  MQTT_AC_SWING_SET_TOPIC,
+                  MQTT_AC_GET_TOPIC};
+
 void callback(char *topic, byte *payload, unsigned int length);
 
-Mqtt mqtt(Serial, MQTT_SERVER_IP, MQTT_SERVER_PORT, 
-         MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD,
-         MQTT_LOG_TOPIC, callback);
+Mqtt mqtt(Serial, MQTT_SERVER_IP, MQTT_SERVER_PORT,
+          MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD,
+          MQTT_LOG_TOPIC,
+          topics.data(), topics.size(),
+          callback);
 
 String header_log(char const *level, int n_log)
 {
@@ -407,20 +417,12 @@ void setup()
     // init the MQTT connection
     if (!mqtt.begin())
     {
-        Serial.println("ERROR: max_attempt reached to MQTT connect");
+        Serial.println("MQTT error");
         Serial.print("Waiting and Restaring");
         wifi.disconnect();
         delay(1000);
         ESP.restart();
     }
-
-    mqtt.subscribe(MQTT_SENSOR_TOPIC);
-    mqtt.subscribe(MQTT_AC_POWER_SET_TOPIC);
-    mqtt.subscribe(MQTT_AC_MODE_SET_TOPIC);
-    mqtt.subscribe(MQTT_AC_TEMP_SET_TOPIC);
-    mqtt.subscribe(MQTT_AC_FAN_SET_TOPIC);
-    mqtt.subscribe(MQTT_AC_SWING_SET_TOPIC);
-    mqtt.subscribe(MQTT_AC_GET_TOPIC);
 
     setup_ac();
 
