@@ -61,13 +61,19 @@ Based on:
 #include "src/esp8266_controllers/HTReader/HTReader.h"
 #include "src/esp8266_controllers/Mqtt/Mqtt.h"
 
+#if __has_include("config_local.h")
 #include "config_local.h" // File for testing outside git
+#else
 #include "config.h"
+#endif
 
 IRSamsungAc ac(kIrLed); // Set the GPIO used for sending messages.
 
+#ifdef CONFIG_H
+Wifi wifi(Serial, WIFI_SSID, WIFI_PASSWORD);
+#else
 Wifi wifi(Serial, WIFI_SSID, WIFI_PASSWORD, local_IP, gateway, subnet);
-
+#endif
 HTReader ht_sensor(
     DHTPIN, DHTTYPE, SLEEPING_TIME_IN_MSECONDS,
     temp_slope, temp_shift,
