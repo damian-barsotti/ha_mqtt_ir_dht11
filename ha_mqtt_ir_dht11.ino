@@ -459,7 +459,13 @@ void loop()
             logger_warn("Failed to read from DHT sensor!");
     }
     else
+    {
         Serial.println("Cannot connect to mqtt");
+        Serial.print("Waiting and Restaring");
+        wifi.disconnect();
+        delay(1000);
+        ESP.restart();
+    }
 
     delay(SLEEPING_TIME_IN_MSECONDS);
 }
