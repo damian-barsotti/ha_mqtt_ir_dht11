@@ -88,8 +88,6 @@ std::array topics{MQTT_SENSOR_TOPIC,
                   MQTT_AC_SWING_SET_TOPIC,
                   MQTT_AC_GET_TOPIC};
 
-void callback(char *topic, byte *payload, unsigned int length);
-
 Mqtt mqtt(Serial, MQTT_SERVER_IP, MQTT_SERVER_PORT,
           MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD,
           MQTT_LOG_TOPIC,
@@ -435,12 +433,8 @@ void setup()
     setup_ac();
 
     ht_sensor.begin();
-    while (ht_sensor.error())
-    {
-        Serial.println("ERROR: sensor read. Retrying ...");
-        delay(ht_sensor.delay_ms());
-        ht_sensor.reset();
-    }
+    if (ht_sensor.error())
+        logger_warn("Failed to read from DHT sensor!");
 }
 
 void loop()
