@@ -421,7 +421,7 @@ void setup()
     Serial.println(String("IP: ") + wifi.localIP().toString());
 
     // init the MQTT connection
-    if (!mqtt.begin())
+    if (!mqtt.begin() && mqtt.attempt() > mqtt_max_attempt)
     {
         Serial.println("MQTT error");
         Serial.print("Waiting and Restaring");
@@ -458,10 +458,11 @@ void loop()
         if (ht_sensor.error())
             logger_warn("Failed to read from DHT sensor!");
     }
-    else
+    else if (mqtt.attempt() > mqtt_max_attempt)
     {
         Serial.println("Cannot connect to mqtt");
         Serial.print("Waiting and Restaring");
+        mqtt.reset();
         wifi.disconnect();
         delay(1000);
         ESP.restart();

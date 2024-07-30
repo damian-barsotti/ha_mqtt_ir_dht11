@@ -75,6 +75,8 @@ const float humid_shift = 21.285f;
 
 const std::size_t n_reads = 3;
 
+static const int mqtt_max_attempt = 10;
+
 #ifdef  ARDUINO_ESP8266_GENERIC
 #define D2 4
 #define D3 0
