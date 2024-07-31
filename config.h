@@ -19,7 +19,7 @@ const PROGMEM char* WIFI_PASSWORD = "[Redacted]";
 // IPAddress secondaryDNS(8, 8, 4, 4); //optional
 
 // MQTT: ID, server IP, port, username and password
-const PROGMEM char* MQTT_CLIENT_ID = "home_sensor1_dht11";
+const PROGMEM char* MQTT_CLIENT_ID = "living_ac";
 const PROGMEM char* MQTT_SERVER_IP = "192.168.0.5";
 const PROGMEM uint16_t MQTT_SERVER_PORT = 1883;
 const PROGMEM char* MQTT_USER = "[Redacted]";
