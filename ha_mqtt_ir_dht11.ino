@@ -234,6 +234,8 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
     char command[length + 1];
 
+    mqtt.callback_called();
+
     if (strcmp(topic, MQTT_AC_GET_TOPIC) == 0 ||
         strcmp(topic, MQTT_LOG_TOPIC) == 0 ||
         strcmp(topic, MQTT_SENSOR_TOPIC) == 0)
